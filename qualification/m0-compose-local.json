@@ -1,0 +1,43 @@
+{
+  "schema": "ai-enterprise-m0-compose-local-v1",
+  "host": "sr-kaaldev",
+  "date_utc": "2026-11-20",
+  "overall": "PASS",
+  "scope": "local M0 Compose fixture, not WP1 or production",
+  "git_head_at_run": "819915f1b2efcf518539215b096656f4064e729c",
+  "working_tree_at_run": "untracked baseline files; Git HEAD alone does not identify source",
+  "observed_checks": [
+    "Docker service recovered and daemon reachable",
+    "Docker Compose config validated",
+    "image built on amd64",
+    "container healthy",
+    "/livez=200 and /readyz=200 process-only",
+    "synthetic cross-tenant request=403",
+    "UID 10001, readonly filesystem, all capabilities dropped, no-new-privileges",
+    "SHA256SUMS verification for first run",
+    "successful down and cleanup-enabled rerun"
+  ],
+  "runs": [
+    {
+      "id": "compose-20261120T153241Z",
+      "result": "PASS",
+      "scope": "M0 Docker Compose local only",
+      "evidence_manifest_sha256": "a9d8f3da9b3c48c3c7d234742c39078b1dd1a9a3a4b5a73f008fa4f2cbf230c7",
+      "evidence_bundle_local_path": "reports/validation/compose-20261120T153241Z",
+      "files_verified": 16,
+      "operator_cleanup": "manual Compose down verified from uploaded Node1 log"
+    },
+    {
+      "id": "compose-20261120T153549Z",
+      "result": "PASS",
+      "scope": "M0 Docker Compose local only",
+      "evidence_manifest_sha256": "f097878074f90557c7978543fcde0efc6cd006f15c0145b1e5524a86c1f77611",
+      "evidence_bundle_local_path": "reports/validation/compose-20261120T153549Z",
+      "files_verified": 16,
+      "operator_cleanup": "verified from uploaded Node1 log"
+    }
+  ],
+  "wp1_status": "NOT_RUN",
+  "production_authorized": false,
+  "review_required": true
+}

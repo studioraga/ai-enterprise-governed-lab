@@ -1,0 +1,32 @@
+{
+  "schema": "ai-enterprise-import-provenance-v1",
+  "generated_date": "2026-11-19",
+  "source_archives": [
+    {
+      "repository": "ai_platform_setup_v3",
+      "sha256": "588d590030971ac73d651450b539f5871bc7e34fd517ebc6047e3d8319ba9dc5",
+      "head": "ca0e49dc84d828cd56879e74a5d20455802e3e7a",
+      "branch": "research/r03-contract-preparation",
+      "branches": {
+        "backup/initial-before-principal-v3-import": "8e434dabf5f53198031d380b12ed836e28c98a22",
+        "feature/import-principal-v3-baseline": "66ac5b19a7a1f74f64f1e9668739abae0d6375f7",
+        "feature/r05-extended-sdk-compatibility": "cd02ce0f98535ce0ec39561985e07883388cfe9b",
+        "main": "3f429aacb889f55521671cb013a73ed5550d90be",
+        "research/r03-contract-preparation": "ca0e49dc84d828cd56879e74a5d20455802e3e7a",
+        "research/r06-rag-evaluation": "3f429aacb889f55521671cb013a73ed5550d90be",
+        "research/r07-governed-agents": "d7bde29f405a91a8b5944fdf43cb5653035398e4",
+        "research/r09-postgresql-rls": "cfb9051d31e562999d3f18e383f845ec4d7ff353",
+        "research/r10-redis-qdrant": "62074b8913f1be0bf93c4b512bcfea31667d403e"
+      },
+      "working_tree": "untracked research paths present; not imported or accepted"
+    },
+    {
+      "repository": "portable-agentic-ai-governance",
+      "sha256": "1ef745f9684f7a635e2da3719fcbc3dc5f2e4c2f6cb90285fa0a8ead93a8c431",
+      "head": "0944fa5d05a9a16c0d7b4a2db12a19bee5fe1b72",
+      "branch": "main",
+      "working_tree": "M30 modified/untracked and not committed, not eligible as accepted release"
+    }
+  ],
+  "policy": "No wholesale copy; adapter-by-adapter review; licenses/security/source tracing before promotion; no inherited acceptance"
+}

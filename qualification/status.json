@@ -1,0 +1,48 @@
+{
+  "schema": "ai-enterprise-qualification-v1",
+  "milestone": "M0",
+  "production_authorized": false,
+  "work_packages": [
+    {
+      "id": "WP1",
+      "status": "planned",
+      "acceptance": "pending independent review"
+    },
+    {
+      "id": "WP2",
+      "status": "planned",
+      "acceptance": "pending independent review"
+    },
+    {
+      "id": "WP3",
+      "status": "planned",
+      "acceptance": "pending independent review"
+    },
+    {
+      "id": "WP4",
+      "status": "planned",
+      "acceptance": "pending independent review"
+    },
+    {
+      "id": "WP5",
+      "status": "planned",
+      "acceptance": "pending independent review"
+    },
+    {
+      "id": "WP6",
+      "status": "planned",
+      "acceptance": "pending independent review"
+    }
+  ],
+  "warning": "M0 is a local demonstration fixture. Source research and governance M30 are not production qualified.",
+  "local_qualifications": {
+    "m0_python": "PASS (10 tests, Node1 reported and archive rechecked)",
+    "m0_docker_compose": "PASS (two Node1 runs; hashes rechecked against bundled reports)",
+    "m0_compose_evidence": [
+      "compose-20261120T153241Z",
+      "compose-20261120T153549Z"
+    ],
+    "wp1_kubernetes": "NOT_RUN",
+    "production_authorized": false
+  }
+}

@@ -1,0 +1,15 @@
+services:
+  api:
+    build: .
+    image: ai-enterprise-feasibility:local
+    ports:
+      - "127.0.0.1:18080:8000"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs: [/tmp]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/livez', timeout=2)"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
