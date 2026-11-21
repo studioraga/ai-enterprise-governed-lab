@@ -93,4 +93,19 @@ See [Node1 setup §5](docs/Node1-Setup.md) for the uploaded Docker-socket error,
 
 ## Node1 M0 Compose acceptance and WP1 work
 
-The 2026-11-20 Node1 v2 logs and archived evidence support **M0 Docker Compose locally verified**. This is a synthetic FastAPI fixture with process-only `/readyz`, not real authenticated tenant isolation or a production service. See `qualification/m0-compose-local.json` and `docs/WP1-Node1-Qualification.md`. WP1 remains NOT_RUN and production authorization remains false.
+The 2026-11-20 Node1 v2 logs and archived evidence support **M0 Docker Compose locally verified**. This is a synthetic FastAPI fixture with process-only `/readyz`, not real authenticated tenant isolation or a production service. See `qualification/m0-compose-local.json` and `docs/WP1-Node1-Qualification.md`. WP1 is in progress but unaccepted; production authorization remains false.
+
+## Node1 November 21 WP1 checkpoint (local research, not acceptance)
+
+- Initial Helm rendering and kind deployment succeeded; Deployment, Service, ServiceAccount, and NetworkPolicy exist.
+- Helm revision 2 was healthy (`ai-enterprise-feasibility:local`); revision 3 was the intentionally missing image; kubelet recorded `ErrImagePull` and `ImagePullBackOff`.
+- After the Node1 reboot, Docker/containerd were inactive; existing kind node was recovered without replacement, kubeconfig refreshed, and Kubernetes became reachable.
+- Helm revision 4 successfully rolled back to revision 2. Deployment generation 3 was observed, with one updated/ready/available replica and the correct image. Synthetic API checks returned liveness 200, process readiness 200, denied cross-tenant 403, and allowed same-tenant 200.
+- The old Pod had one restart after reboot. This was not zero-downtime failover or a test of high availability.
+- **NOT ACCEPTED:** NetworkPolicy enforcement has NOT been tested on this specific kindnet cluster (modern kindnet supports the NetworkPolicy API; test actual traffic); no real OIDC, enterprise secrets lifecycle, independently reviewed evidence, or production authorization.
+- **Security:** the uploaded test archive included a kubeconfig backup under ignored `reports/validation`; exclude it from every distributed archive, rotate/revoke credentials if disclosure warrants, and do not publish it. Evidence hashing proves integrity only, not secrecy or trust.
+- Updated scripts: `scripts/wp1_verify_live_recovery.sh` is a read-only live-state check; `scripts/wp1_capture_safe_evidence.sh` captures a minimal credential-free evidence subset; `scripts/smoke_local.sh` adds positive/negative HTTP checks; the kind helper now blocks ambiguous existing-node recovery.
+
+## WP1 November 21 verification checkpoint (v5.4)
+
+The v5.3 kindnet differential test passed 3 positive HTTP controls and 2 expected timeout restrictions. Live ServiceAccount authorization denied `list secrets` and `create deployments`; no workload token is automatically mounted. This is *behavioral lab evidence*, **not** independent WP1 acceptance or production authorization. Run `scripts/wp1_review_network_evidence.py` and `scripts/wp1_rbac_secret_scope.sh`, then follow [independent reviewer procedure](docs/WP1-Independent-Review.md). Raw evidence must stay outside Git.

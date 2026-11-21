@@ -8,6 +8,5 @@ python3 scripts/verify_project_identity.py
 python3 scripts/check_no_production_claims.py
 if command -v docker >/dev/null 2>&1; then docker compose config --quiet; else echo 'SKIP: Docker not installed'; fi
 if command -v helm >/dev/null 2>&1; then helm lint helm/feasibility; helm template feasibility helm/feasibility >/dev/null; else echo 'SKIP: Helm not installed'; fi
-printf 'WP0 local static + unit checks: PASS (conditional tool skips above)\n'
-
 python3 scripts/verify_m0_compose_record.py
+printf 'M0/WP1 baseline checks: PASS (runtime tools checked only where available; WP1 not accepted)\n'

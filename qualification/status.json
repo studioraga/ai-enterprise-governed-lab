@@ -5,8 +5,8 @@
   "work_packages": [
     {
       "id": "WP1",
-      "status": "planned",
-      "acceptance": "pending independent review"
+      "status": "in_progress",
+      "acceptance": "pending independent acceptance review, explicit no-credential fixture/Secret scope, evidence approval; real enterprise OIDC and Secret lifecycle remain unimplemented"
     },
     {
       "id": "WP2",
@@ -34,7 +34,7 @@
       "acceptance": "pending independent review"
     }
   ],
-  "warning": "M0 is a local demonstration fixture. Source research and governance M30 are not production qualified.",
+  "warning": "M0 locally accepted. WP1 kind rollout/rollback and five-path differential NetworkPolicy behavior verified on Node1; independently scoped lab approval PENDING. Synthetic identity is not authentication. Production denied.",
   "local_qualifications": {
     "m0_python": "PASS (10 tests, Node1 reported and archive rechecked)",
     "m0_docker_compose": "PASS (two Node1 runs; hashes rechecked against bundled reports)",
@@ -42,7 +42,11 @@
       "compose-20261120T153241Z",
       "compose-20261120T153549Z"
     ],
-    "wp1_kubernetes": "NOT_RUN",
-    "production_authorized": false
+    "wp1_kubernetes": "PARTIAL: Helm render, kind rollout, missing-image failure and revision-4 rollback verified on Node1 2026-11-21; not accepted",
+    "production_authorized": false,
+    "wp1_rollback": "PASS: retained Node1 logs; revision 3 invalid image, revision 4 rollback to revision 2; HTTP 200/200/403 plus synthetic allow 200",
+    "wp1_networkpolicy": "PASS for three allowed HTTP controls and two expected timeout paths (v5.3 Node1 2026-11-21); independent review PENDING",
+    "wp1_rbac": "PASS observed: service account list secrets=no; create deployments=no (Node1 2026-11-21)",
+    "wp1_secret_scope": "NOT_APPLICABLE: no application credential required by fixture; enterprise managed Secret lifecycle NOT_IMPLEMENTED"
   }
 }

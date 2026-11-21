@@ -82,4 +82,69 @@ A working Docker CLI and Compose plugin do not imply an operational daemon. If `
 
 ## November 20 v3 checkpoint
 
-M0 Docker Compose qualification: **locally verified** using two Node1 runs and evidence checksum revalidation. `qualification/m0-compose-local.json` records the scope and provenance limits. WP1 still **NOT_RUN/UNACCEPTED**. Refer to `docs/WP1-Node1-Qualification.md` for dependency, manifest, rollback, CNI enforcement, security and evidence gates. Production remains denied.
+M0 Docker Compose qualification: **locally verified** using two Node1 runs and evidence checksum revalidation. `qualification/m0-compose-local.json` records the scope and provenance limits. WP1 now **IN_PROGRESS/UNACCEPTED** (initial kind rollout and rollback verified; NetworkPolicy and independent approval pending). Refer to `docs/WP1-Node1-Qualification.md` for dependency, manifest, rollback, CNI enforcement, security and evidence gates. Production remains denied.
+
+## Node1 November 21 WP1 checkpoint (local research, not acceptance)
+
+- Initial Helm rendering and kind deployment succeeded; Deployment, Service, ServiceAccount, and NetworkPolicy exist.
+- Helm revision 2 was healthy (`ai-enterprise-feasibility:local`); revision 3 was the intentionally missing image; kubelet recorded `ErrImagePull` and `ImagePullBackOff`.
+- After the Node1 reboot, Docker/containerd were inactive; existing kind node was recovered without replacement, kubeconfig refreshed, and Kubernetes became reachable.
+- Helm revision 4 successfully rolled back to revision 2. Deployment generation 3 was observed, with one updated/ready/available replica and the correct image. Synthetic API checks returned liveness 200, process readiness 200, denied cross-tenant 403, and allowed same-tenant 200.
+- The old Pod had one restart after reboot. This was not zero-downtime failover or a test of high availability.
+- **NOT ACCEPTED:** NetworkPolicy enforcement has NOT been tested on this specific kindnet cluster (modern kindnet supports the NetworkPolicy API; test actual traffic); no real OIDC, enterprise secrets lifecycle, independently reviewed evidence, or production authorization.
+- **Security:** the uploaded test archive included a kubeconfig backup under ignored `reports/validation`; exclude it from every distributed archive, rotate/revoke credentials if disclosure warrants, and do not publish it. Evidence hashing proves integrity only, not secrecy or trust.
+- Updated scripts: `scripts/wp1_verify_live_recovery.sh` is a read-only live-state check; `scripts/wp1_capture_safe_evidence.sh` captures a minimal credential-free evidence subset; `scripts/smoke_local.sh` adds positive/negative HTTP checks; the kind helper now blocks ambiguous existing-node recovery.
+
+
+## WP1 progress and M0 evidence verifier (2026-11-21 correction)
+
+The M0 record's `wp1_status: NOT_RUN` is historical (at M0 qualification).
+`qualification/status.json` is the current milestone state and may advance WP1
+from `planned` to `in_progress`, and eventually to `accepted` only after independent review.
+The M0 verifier is milestone-independent; the separate release guard protects
+current policy while WP1 remains unaccepted.
+`scripts/verify_m0_compose_record.py` checks both invariants separately, and
+checks the recorded SHA-256 digest of each M0 manifest as well as file hashes.
+Run `python3 scripts/verify_m0_compose_record.py --require-evidence` on Node1;
+CI without Node1's ignored reports checks the record structure but must show
+`NOT_PRESENT` for evidence rather than a false PASS.
+
+After initial CNI tests, confirm a denied request is not merely DNS/image/runtime
+failure; verify positive connectivity and the kindnet enforcement version.
+
+## WP1 temporary network probe leftovers
+
+After v5.1 initial traffic probing, `wp1-same-ns` and the namespace
+`ai-enterprise-wp1-probe` can remain. The corrected differential probe also
+uses a third, separately labeled `wp1-control-receiver` Pod. Inspect exact
+objects and ownership before deletion; remove only these named lab resources.
+The network probe deliberately preserves objects on success and failure.
+A timeout is counted as a tested denial only after cross-namespace connectivity
+to the unprotected receiver and same-namespace connectivity both pass.
+
+
+## WP1 v5.3 receiver-readiness correction (2026-11-21)
+
+The Node1 v5.2 differential probe started all three disposable Pods but failed
+on the *same-namespace to unprotected receiver* positive control with
+`curl: (7) Failed to connect to <receiver-pod-ip>:8000` (exit 7).
+This is **not proof of NetworkPolicy denial**: the receiver was created with
+`kubectl run` without a readinessProbe, so Pod Ready did not guarantee Uvicorn
+had bound port 8000. Inspect the retained receiver logs and local HTTP response
+before attributing the failure to startup timing; a command/entrypoint error
+remains possible until diagnosed.
+
+The corrected probe creates a labeled receiver Pod with startup and HTTP readiness
+probes, non-root identity, no service-account token, a read-only root filesystem
+and restricted capabilities. It also verifies receiver-loopback HTTP 200 before
+proceeding to three positive cross-Pod controls and two expected timeout denials.
+If loopback is unavailable, the test is BLOCKED, not a policy failure or PASS.
+Preserve the failed probe's evidence and inspect ownership before manually
+deleting exactly the test Pods and test namespace. Do not delete the application,
+Helm release or kind cluster. Re-run once and record CNI details, Pod IPs,
+control successes, denial error types and SHA-256 evidence before review.
+WP1 remains IN_PROGRESS; production authorization stays denied.
+
+## WP1 v5.4 evidence and RBAC unblocking
+
+Do not edit/re-hash `reports/validation/wp1-network-v5.3-20261121T052723Z/`: its operator summary has placeholders, but the original hashed bundle must remain intact. Write interpretations to a separate review directory. If `kubectl auth can-i --as=...` fails due to impersonation restrictions, request authorized review; **do not grant privileges to force the test to pass**. The fixture requires no application Secrets, so mark provisioning N/A, while enterprise Secret lifecycle remains NOT_IMPLEMENTED. Do not include kubeconfig or raw Secrets in shared archives.

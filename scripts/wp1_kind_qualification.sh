@@ -19,7 +19,13 @@ docker info >/dev/null || { echo 'BLOCKED: Docker daemon unavailable' >&2; exit 
 helm lint helm/feasibility
 helm template "$release" helm/feasibility --namespace "$namespace" \
   --set image.repository=ai-enterprise-feasibility --set image.tag=local >/dev/null
+# Never silently recreate an expected cluster when its Docker node still exists.
+# Recovery of stopped/crashed nodes is a separate, evidence-preserving operation.
 if ! kind get clusters | grep -Fxq "$cluster"; then
+  if docker container inspect "${cluster}-control-plane" >/dev/null 2>&1; then
+    echo "BLOCKED: existing kind control-plane container found but kind does not list it; recover existing node first" >&2
+    exit 2
+  fi
   kind create cluster --name "$cluster"
 fi
 kubectl --context "$context" cluster-info >/dev/null
@@ -33,5 +39,5 @@ helm --kube-context "$context" upgrade --install "$release" helm/feasibility \
 kubectl --context "$context" -n "$namespace" rollout status \
   "deployment/${release}-api" --timeout=120s
 kubectl --context "$context" -n "$namespace" get deployment,service,pods -o wide
-printf '\nWP1 PARTIAL: deployment rollout checked. Smoke, isolation, secrets, network and rollback gates remain NOT_RUN.\n'
+printf '\nWP1 PARTIAL: deployment rollout checked. Smoke and rollback have historical Node1 evidence; this helper alone does not requalify them, or CNI/secret/independent review gates.\n'
 printf 'Context=%s Namespace=%s Release=%s Image=%s\n' "$context" "$namespace" "$release" "$image"

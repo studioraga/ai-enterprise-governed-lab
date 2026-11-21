@@ -36,3 +36,18 @@ WP1–WP6 acceptance, actual integration with R07/R09/R10 governance source, rea
 
 **Caution:** The runs reported Git HEAD `819915f`, but project files were untracked. The Git commit alone does **not** establish which source was tested. Stage and review the actual M0 files before committing/tagging; if implementation changes, repeat affected tests. M0 Compose PASS **does not** accept WP1; Kubernetes, OIDC, cloud, R07/R09/R10 integration, tracing and production release all remain NOT_RUN/denied.
 
+
+## Node1 November 21 WP1 checkpoint (local research, not acceptance)
+
+- Initial Helm rendering and kind deployment succeeded; Deployment, Service, ServiceAccount, and NetworkPolicy exist.
+- Helm revision 2 was healthy (`ai-enterprise-feasibility:local`); revision 3 was the intentionally missing image; kubelet recorded `ErrImagePull` and `ImagePullBackOff`.
+- After the Node1 reboot, Docker/containerd were inactive; existing kind node was recovered without replacement, kubeconfig refreshed, and Kubernetes became reachable.
+- Helm revision 4 successfully rolled back to revision 2. Deployment generation 3 was observed, with one updated/ready/available replica and the correct image. Synthetic API checks returned liveness 200, process readiness 200, denied cross-tenant 403, and allowed same-tenant 200.
+- The old Pod had one restart after reboot. This was not zero-downtime failover or a test of high availability.
+- **NOT ACCEPTED:** NetworkPolicy enforcement has NOT been tested on this specific kindnet cluster (modern kindnet supports the NetworkPolicy API; test actual traffic); no real OIDC, enterprise secrets lifecycle, independently reviewed evidence, or production authorization.
+- **Security:** the uploaded test archive included a kubeconfig backup under ignored `reports/validation`; exclude it from every distributed archive, rotate/revoke credentials if disclosure warrants, and do not publish it. Evidence hashing proves integrity only, not secrecy or trust.
+- Updated scripts: `scripts/wp1_verify_live_recovery.sh` is a read-only live-state check; `scripts/wp1_capture_safe_evidence.sh` captures a minimal credential-free evidence subset; `scripts/smoke_local.sh` adds positive/negative HTTP checks; the kind helper now blocks ambiguous existing-node recovery.
+
+## Node1 v5.3 NetworkPolicy verification (2026-11-21)
+
+Original v5.3 differential test returned exit 0, with 3 allowed HTTP controls and 2 timeout-based denials. Cleanup succeeded and the application remained 1/1 ready. `kubectl auth can-i` showed `no` for listing Secrets and creating Deployments as the fixture ServiceAccount. Evidence integrity, local lab scope, and human review must remain distinct. The current WP1 state is in progress; production denied.

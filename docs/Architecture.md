@@ -133,4 +133,49 @@ flowchart LR
 
 ## November 20 v3 checkpoint
 
-M0 Docker Compose qualification: **locally verified** using two Node1 runs and evidence checksum revalidation. `qualification/m0-compose-local.json` records the scope and provenance limits. WP1 still **NOT_RUN/UNACCEPTED**. Refer to `docs/WP1-Node1-Qualification.md` for dependency, manifest, rollback, CNI enforcement, security and evidence gates. Production remains denied.
+M0 Docker Compose qualification: **locally verified** using two Node1 runs and evidence checksum revalidation. `qualification/m0-compose-local.json` records the scope and provenance limits. WP1 now **IN_PROGRESS/UNACCEPTED** (initial kind rollout and rollback verified; NetworkPolicy and independent approval pending). Refer to `docs/WP1-Node1-Qualification.md` for dependency, manifest, rollback, CNI enforcement, security and evidence gates. Production remains denied.
+
+## Node1 November 21 WP1 checkpoint (local research, not acceptance)
+
+- Initial Helm rendering and kind deployment succeeded; Deployment, Service, ServiceAccount, and NetworkPolicy exist.
+- Helm revision 2 was healthy (`ai-enterprise-feasibility:local`); revision 3 was the intentionally missing image; kubelet recorded `ErrImagePull` and `ImagePullBackOff`.
+- After the Node1 reboot, Docker/containerd were inactive; existing kind node was recovered without replacement, kubeconfig refreshed, and Kubernetes became reachable.
+- Helm revision 4 successfully rolled back to revision 2. Deployment generation 3 was observed, with one updated/ready/available replica and the correct image. Synthetic API checks returned liveness 200, process readiness 200, denied cross-tenant 403, and allowed same-tenant 200.
+- The old Pod had one restart after reboot. This was not zero-downtime failover or a test of high availability.
+- **NOT ACCEPTED:** NetworkPolicy enforcement has NOT been tested on this specific kindnet cluster (modern kindnet supports the NetworkPolicy API; test actual traffic); no real OIDC, enterprise secrets lifecycle, independently reviewed evidence, or production authorization.
+- **Security:** the uploaded test archive included a kubeconfig backup under ignored `reports/validation`; exclude it from every distributed archive, rotate/revoke credentials if disclosure warrants, and do not publish it. Evidence hashing proves integrity only, not secrecy or trust.
+- Updated scripts: `scripts/wp1_verify_live_recovery.sh` is a read-only live-state check; `scripts/wp1_capture_safe_evidence.sh` captures a minimal credential-free evidence subset; `scripts/smoke_local.sh` adds positive/negative HTTP checks; the kind helper now blocks ambiguous existing-node recovery.
+
+### Node1 host-reboot and rollback sequence
+
+```mermaid
+sequenceDiagram
+ participant Host as Node1/Docker
+ participant Kind as Existing kind control plane
+ participant K8s as Kubernetes Deployment
+ participant Helm as Helm history
+ Host->>Host: Start containerd and Docker
+ Host->>Kind: Recover existing node (do not recreate)
+ Kind-->>K8s: API reachable
+ Helm-->>K8s: Revision 3 missing-image desired state
+ K8s-->>Helm: ErrImagePull / ImagePullBackOff
+ Helm->>K8s: Rollback to revision 2 (new revision 4)
+ K8s-->>Helm: 1 updated, ready, available
+ Note over Host,Helm: API 200/200/403 + synthetic allow 200; WP1 still partial
+```
+
+## WP1 tested network topology (November 21, 2026)
+
+```mermaid
+flowchart LR
+  A[Same-namespace probe] -->|HTTP 200| P[Protected API Pod]
+  A -->|HTTP 200| R[Unprotected control receiver]
+  B[Other-namespace probe] -->|HTTP 200| R
+  B -.->|curl 28 timeout| P
+  P -.->|socket timeout| R
+  NP[Ingress/egress NetworkPolicy] -.-> P
+  RV[Independent reviewer] --> G{Accept local WP1 scope?}
+  G -->|Pending| D[WP1 remains in progress]
+```
+
+These five observations were recorded on one owned kind cluster, not production. The receiver had a transient startup warning before readiness passed. See `docs/WP1-Independent-Review.md` for integrity checks and remaining security boundaries.
