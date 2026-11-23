@@ -1,0 +1,33 @@
+{
+  "schema": "ai-enterprise-wp1-lab-contract-v1",
+  "contract_id": "WP1-LAB-CONTRACT-v1",
+  "scope": "single-node-local-kind-synthetic-feasibility-fixture",
+  "required_gates": [
+    "helm_static_render",
+    "kind_deployment_readiness",
+    "controlled_failed_image_rollout",
+    "helm_rollback_recovery",
+    "synthetic_http_positive_negative_tests",
+    "networkpolicy_five_path_differential_test",
+    "serviceaccount_token_and_workload_security",
+    "rbac_secret_list_denied",
+    "rbac_deployment_create_denied",
+    "evidence_integrity_and_source_provenance",
+    "independent_reviewer_approval"
+  ],
+  "exceptions": {
+    "application_secret_provisioning": {
+      "disposition": "NOT_APPLICABLE",
+      "reason": "The synthetic fixture requires no application credential"
+    }
+  },
+  "not_implemented": [
+    "real_oidc_jwks_authentication",
+    "managed_secret_rotation_and_revocation",
+    "external_secret_provider_integration",
+    "production_high_availability",
+    "production_tenant_isolation"
+  ],
+  "production_authorized": false,
+  "acceptance_status": "PENDING_REVIEW"
+}
