@@ -1,0 +1,27 @@
+name: WP1 governance source verification (not approval)
+on:
+  pull_request:
+    branches:
+      - feature/wp1-kubernetes-integration
+      - main
+  push:
+    branches:
+      - feature/wp1-kubernetes-integration
+permissions:
+  contents: read
+jobs:
+  governance-source:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install test dependencies
+        run: python -m pip install -e '.[dev]'
+      - name: Verify source and milestone boundary
+        run: bash scripts/verify_baseline.sh
+      - name: Verify governance gate unit tests
+        run: python -m pytest -q tests/test_wp1_live_release_gate.py tests/test_wp1_pr_history_audit.py
+# This workflow neither authenticates original Node1 evidence nor grants release approval.
+# Administrators must designate governance-source as a required branch check.
