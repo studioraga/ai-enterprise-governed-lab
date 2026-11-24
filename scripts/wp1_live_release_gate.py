@@ -57,6 +57,8 @@ def assess(pr, reviews, protection, check_runs, statuses, reviewers, expected_he
         needed = 1
     if not required_reviews.get('dismiss_stale_reviews') and not required_reviews.get('require_last_push_approval'):
         problems.append('branch protection lacks stale-review/last-push guard')
+    if ((protection or {}).get('enforce_admins') or {}).get('enabled') is not True:
+        problems.append('administrators are not subject to branch protection')
     if ((protection or {}).get('allow_force_pushes') or {}).get('enabled') is True:
         problems.append('branch permits force pushes')
     if ((protection or {}).get('allow_deletions') or {}).get('enabled') is True:
@@ -99,7 +101,10 @@ def assess(pr, reviews, protection, check_runs, statuses, reviewers, expected_he
     for name in sorted(required_names):
         run = latest_checks.get(name)
         st = latest_status.get(name)
-        if run and run.get('status') == 'completed' and run.get('conclusion') == 'success':
+        if run is not None:
+            if run.get('status') == 'completed' and run.get('conclusion') == 'success':
+                continue
+            problems.append('required check run failed or incomplete: ' + name)
             continue
         if st and st.get('state') == 'success':
             continue

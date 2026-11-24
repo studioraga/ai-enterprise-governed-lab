@@ -9,7 +9,7 @@ SHA='a'*40
 BASE='feature/wp1-kubernetes-integration'
 PR={'state':'open','draft':False,'head':{'sha':SHA},'base':{'ref':BASE},'user':{'login':'implementer'},'mergeable':True,'mergeable_state':'clean'}
 REV=[{'id':1,'user':{'login':'approved-reviewer'},'state':'APPROVED','commit_id':SHA,'submitted_at':'2026-11-23T10:00:00Z'}]
-PROTECTION={'required_pull_request_reviews':{'required_approving_review_count':1,'dismiss_stale_reviews':True},'required_status_checks':{'contexts':['governance-source']},'allow_force_pushes':{'enabled':False},'allow_deletions':{'enabled':False}}
+PROTECTION={'required_pull_request_reviews':{'required_approving_review_count':1,'dismiss_stale_reviews':True},'required_status_checks':{'contexts':['governance-source']},'enforce_admins':{'enabled':True},'allow_force_pushes':{'enabled':False},'allow_deletions':{'enabled':False}}
 RUNS={'total_count':1,'check_runs':[{'id':100,'name':'governance-source','head_sha':SHA,'status':'completed','conclusion':'success'}]}
 STATUSES={'sha':SHA,'statuses':[]}
 
@@ -69,3 +69,12 @@ def test_no_reviewer_policy():
 def test_pagination():
     assert m.paginated_arrays('[]\n[{"id":1}]')==[{'id':1}]
     with pytest.raises(ValueError):m.paginated_arrays('{}')
+
+
+def test_admins_must_be_protected():
+    assert check(protection={**PROTECTION, 'enforce_admins': {'enabled': False}})['decision'] == 'BLOCKED'
+
+def test_failing_check_run_not_masked_by_legacy_success():
+    failing = {'total_count': 1, 'check_runs': [{**RUNS['check_runs'][0], 'conclusion': 'failure'}]}
+    success_status = {'sha': SHA, 'statuses': [{'context': 'governance-source', 'state': 'success'}]}
+    assert check(runs=failing, statuses=success_status)['decision'] == 'BLOCKED'
